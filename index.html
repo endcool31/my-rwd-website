@@ -1,326 +1,171 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>現代化資訊儀表板</title>
-    
-    <!-- 引入 Google Fonts (Noto Sans TC 提供優秀的繁體中文顯示效果) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- 引入 Tailwind CSS (用於響應式設計與樣式) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 引入 FontAwesome (用於圖示) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- 引入 Chart.js (用於數據圖表) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D 翻頁展示網站</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Page-Flip (3D翻書庫) -->
+  <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.js"></script>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Noto Sans TC"', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            900: '#1e3a8a',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* 平滑滾動與基礎設定 */
-        html {
-            scroll-behavior: smooth;
-        }
-        body {
-            background-color: #f8fafc;
-            color: #334155;
-        }
-        /* 隱藏捲軸但保留滾動功能 (美化) */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
-        }
-    </style>
+  <style>
+    /* 翻頁容器的景深設定 */
+    .book-container {
+      perspective: 1500px;
+    }
+    .page {
+      background-color: #ffffff;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      overflow-y: auto;
+    }
+    /* 頁面中縫陰影，營造書脊立體感 */
+    .page.--right {
+      border-left: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    .page.--left {
+      border-right: 1px solid rgba(0, 0, 0, 0.08);
+    }
+  </style>
 </head>
-<body class="font-sans antialiased flex flex-col min-h-screen">
+<body class="bg-slate-900 text-slate-800 min-h-screen flex flex-col justify-between py-6 px-4">
 
-    <!-- 導覽列 -->
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-chart-pie text-brand-600 text-2xl"></i>
-                    <span class="font-bold text-xl text-slate-800 tracking-wider">資訊儀表板</span>
-                </div>
-                <div class="hidden md:flex space-x-8">
-                    <a href="#news" class="text-slate-600 hover:text-brand-600 transition-colors font-medium">最新消息</a>
-                    <a href="#charts" class="text-slate-600 hover:text-brand-600 transition-colors font-medium">數據分析</a>
-                </div>
-                <!-- 手機版選單按鈕 (裝飾用) -->
-                <div class="md:hidden flex items-center">
-                    <button class="text-slate-600 hover:text-brand-600 focus:outline-none">
-                        <i class="fa-solid fa-bars text-xl"></i>
-                    </button>
-                </div>
-            </div>
+  <!-- 頂部控制面板 -->
+  <header class="max-w-4xl mx-auto w-full flex items-center justify-between text-white mb-4">
+    <h1 class="text-xl font-bold tracking-wide">互動數據手冊</h1>
+    <div class="space-x-3">
+      <button id="prevBtn" class="px-4 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition">
+        &larr; 上一頁
+      </button>
+      <span id="pageCounter" class="text-sm text-slate-300 font-mono">1 / 4</span>
+      <button id="nextBtn" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm transition">
+        下一頁 &rarr;
+      </button>
+    </div>
+  </header>
+
+  <!-- 3D 翻書主體區域 -->
+  <main class="flex-1 flex items-center justify-center">
+    <div class="book-container w-full max-w-4xl h-[600px] flex justify-center">
+      <div id="flipBook" class="shadow-2xl rounded-lg overflow-hidden">
+        
+        <!-- 第 1 頁：封面 -->
+        <div class="page p-8 flex flex-col items-center justify-center text-center bg-gradient-to-br from-indigo-700 to-blue-900 text-white">
+          <div class="p-4 bg-white/10 rounded-full mb-6 backdrop-blur-sm">
+            <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <h2 class="text-3xl font-extrabold mb-3">營運數據與最新快訊</h2>
+          <p class="text-indigo-200 text-sm max-w-sm">支援拖曳頁角或點擊按鈕流暢翻頁，探索系統資訊與視覺化圖表。</p>
+          <span class="mt-8 text-xs text-indigo-300 animate-pulse">拖曳右下角翻開 &rarr;</span>
         </div>
-    </nav>
 
-    <!-- 頁面主要內容區 -->
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-12">
-
-        <!-- 區塊 1：最新消息 -->
-        <section id="news" class="scroll-mt-24">
-            <div class="flex items-center justify-between mb-6">
-                <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-regular fa-newspaper text-brand-500"></i> 最新消息
-                </h2>
-                <a href="#" class="text-sm text-brand-600 hover:text-brand-800 font-medium transition-colors">查看全部 &rarr;</a>
+        <!-- 第 2 頁：最新消息 -->
+        <div class="page p-6 bg-slate-50">
+          <div class="border-b pb-3 mb-4">
+            <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+              <span class="w-2 h-6 bg-blue-600 rounded"></span> 最新消息
+            </h3>
+          </div>
+          <div class="space-y-4">
+            <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-blue-400 transition">
+              <span class="text-xs font-semibold px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">系統更新</span>
+              <h4 class="font-bold text-sm text-slate-800 mt-1">前端動態翻頁效果升級</h4>
+              <p class="text-xs text-slate-500 mt-1">已成功引入 3D PageFlip 物理渲染引擎，支援手勢與單雙頁自適應響應。</p>
             </div>
-            
-            <!-- 新聞卡片網格 (RWD: 手機1欄, 平板2欄, 電腦3欄) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                
-                <!-- 新聞卡片 1 -->
-                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-100 overflow-hidden group cursor-pointer hover:-translate-y-1">
-                    <div class="h-2 bg-brand-500"></div>
-                    <div class="p-6">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="bg-blue-100 text-brand-600 text-xs font-bold px-2.5 py-0.5 rounded">系統公告</span>
-                            <span class="text-xs text-slate-400"><i class="fa-regular fa-clock"></i> 2026-09-21</span>
-                        </div>
-                        <h3 class="font-bold text-lg text-slate-800 mb-2 group-hover:text-brand-600 transition-colors">系統年度安全升級與維護通知</h3>
-                        <p class="text-slate-600 text-sm line-clamp-3 leading-relaxed">
-                            為提升系統安全性與效能，我們將於本週末進行系統升級。期間可能會有短暫的服務中斷，造成不便敬請見諒。升級後將帶來更流暢的操作體驗。
-                        </p>
-                    </div>
-                </div>
-
-                <!-- 新聞卡片 2 -->
-                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-100 overflow-hidden group cursor-pointer hover:-translate-y-1">
-                    <div class="h-2 bg-emerald-500"></div>
-                    <div class="p-6">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="bg-emerald-100 text-emerald-600 text-xs font-bold px-2.5 py-0.5 rounded">新功能</span>
-                            <span class="text-xs text-slate-400"><i class="fa-regular fa-clock"></i> 2026-09-18</span>
-                        </div>
-                        <h3 class="font-bold text-lg text-slate-800 mb-2 group-hover:text-emerald-600 transition-colors">全新自訂報表模組正式上線</h3>
-                        <p class="text-slate-600 text-sm line-clamp-3 leading-relaxed">
-                            備受期待的自訂報表模組現已推出！使用者現在可以根據自身需求，自由拖曳欄位並匯出專屬的資料報表，大幅提升工作效率與靈活性。
-                        </p>
-                    </div>
-                </div>
-
-                <!-- 新聞卡片 3 -->
-                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-100 overflow-hidden group cursor-pointer hover:-translate-y-1">
-                    <div class="h-2 bg-amber-500"></div>
-                    <div class="p-6">
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="bg-amber-100 text-amber-600 text-xs font-bold px-2.5 py-0.5 rounded">活動快訊</span>
-                            <span class="text-xs text-slate-400"><i class="fa-regular fa-clock"></i> 2026-09-15</span>
-                        </div>
-                        <h3 class="font-bold text-lg text-slate-800 mb-2 group-hover:text-amber-600 transition-colors">第三季線上使用者交流大會</h3>
-                        <p class="text-slate-600 text-sm line-clamp-3 leading-relaxed">
-                            誠摯邀請您參加我們的線上使用者交流大會，我們將分享下一季的產品路線圖，並傾聽您的寶貴建議。參加者還有機會獲得專屬紀念品！
-                        </p>
-                    </div>
-                </div>
-
+            <div class="p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-emerald-400 transition">
+              <span class="text-xs font-semibold px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">公告</span>
+              <h4 class="font-bold text-sm text-slate-800 mt-1">MySQL 連線模組規劃中</h4>
+              <p class="text-xs text-slate-500 mt-1">預計將資料庫查詢透過 RESTful API 傳遞給前端，實現即時動態資料繪圖。</p>
             </div>
-        </section>
-
-        <!-- 區塊 2：數據圖表 (準備連接 MySQL) -->
-        <section id="charts" class="scroll-mt-24 pb-8">
-            <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2 mb-6">
-                <i class="fa-solid fa-chart-line text-brand-500"></i> 營運數據總覽
-            </h2>
-            
-            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
-                
-                <!-- 未來可連接 MySQL 提示區塊 -->
-                <div class="bg-brand-50 border border-brand-100 rounded-lg p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <div class="bg-brand-100 text-brand-600 p-3 rounded-full flex-shrink-0">
-                        <i class="fa-solid fa-database text-lg"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-brand-900 font-bold text-md">開發中提示：未來可連接 MySQL 資料庫</h4>
-                        <p class="text-brand-700 text-sm mt-1">
-                            當前顯示的圖表為<strong>模擬測試數據 (Mock Data)</strong>。在未來的開發階段中，這裡可以整合後端 API (如 Node.js, PHP 或 Python)，直接連接並讀取 <code>MySQL</code> / <code>MariaDB</code> 資料庫，實現動態即時的圖表更新。
-                        </p>
-                    </div>
-                </div>
-
-                <!-- 圖表控制項 (模擬) -->
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-bold text-slate-700">每月活躍用戶與營收趨勢</h3>
-                    <select class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 outline-none">
-                        <option>2026 年度</option>
-                        <option>2025 年度</option>
-                    </select>
-                </div>
-
-                <!-- Chart.js 畫布容器 (設定相對高度以利 RWD) -->
-                <div class="relative w-full h-[60vh] min-h-[300px]">
-                    <canvas id="myChart"></canvas>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- 頁尾 -->
-    <footer class="bg-white border-t border-slate-200 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p class="text-slate-500 text-sm">
-                &copy; 2026 資訊儀表板系統. 僅供展示與版型參考。
-            </p>
-            <div class="flex gap-4 text-slate-400">
-                <a href="#" class="hover:text-brand-600 transition-colors"><i class="fa-brands fa-github text-xl"></i></a>
-                <a href="#" class="hover:text-brand-600 transition-colors"><i class="fa-solid fa-envelope text-xl"></i></a>
-            </div>
+          </div>
         </div>
-    </footer>
 
-    <!-- Chart.js 初始化腳本 -->
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const ctx = document.getElementById('myChart').getContext('2d');
-            
-            // 定義漸層背景 (適用於線條圖下方)
-            let gradientBlue = ctx.createLinearGradient(0, 0, 0, 400);
-            gradientBlue.addColorStop(0, 'rgba(59, 130, 246, 0.5)'); // Tailwind brand-500
-            gradientBlue.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+        <!-- 第 3 頁：圖表展示板塊 -->
+        <div class="page p-6 bg-white flex flex-col justify-between">
+          <div>
+            <div class="border-b pb-3 mb-4">
+              <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <span class="w-2 h-6 bg-indigo-600 rounded"></span> 資料庫動態圖表
+              </h3>
+            </div>
+            <div class="p-3 bg-amber-50 border-l-4 border-amber-500 rounded text-xs text-amber-900 mb-4">
+              <strong>提示：</strong>目前為預覽圖表，後續可藉由 API 請求將 MySQL 返回的陣列填入 <code>data.datasets</code>。
+            </div>
+            <div class="w-full h-64">
+              <canvas id="pageChart"></canvas>
+            </div>
+          </div>
+          <p class="text-center text-xs text-slate-400">Page 3 of 4</p>
+        </div>
 
-            let gradientEmerald = ctx.createLinearGradient(0, 0, 0, 400);
-            gradientEmerald.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
-            gradientEmerald.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+        <!-- 第 4 頁：封底與說明 -->
+        <div class="page p-8 flex flex-col items-center justify-center text-center bg-slate-100 text-slate-700">
+          <h3 class="text-lg font-bold mb-2">系統準備就緒</h3>
+          <p class="text-xs text-slate-500 max-w-xs mb-4">此專案可直接更新至 GitHub repository，即刻於 GitHub Pages 查看動態翻頁成果。</p>
+          <button onclick="flipBook.flip(0)" class="text-xs text-blue-600 hover:underline">返回封面</button>
+        </div>
 
-            // 模擬資料 (未來可替換為 fetch API 從 MySQL 抓取的資料)
-            const mockData = {
-                labels: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月'],
-                datasets: [
-                    {
-                        label: '活躍用戶數 (千人)',
-                        data: [12, 19, 15, 22, 28, 25, 30, 34, 38],
-                        type: 'line',
-                        borderColor: '#3b82f6', // brand-500
-                        backgroundColor: gradientBlue,
-                        borderWidth: 3,
-                        pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#3b82f6',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        fill: true,
-                        tension: 0.4, // 曲線平滑度
-                        yAxisID: 'y'
-                    },
-                    {
-                        label: '營業收入 (萬元)',
-                        data: [60, 85, 75, 110, 135, 120, 150, 165, 190],
-                        type: 'bar',
-                        backgroundColor: '#10b981', // emerald-500
-                        borderRadius: 6,          // 圓角柱狀圖
-                        barPercentage: 0.5,
-                        yAxisID: 'y1'
-                    }
-                ]
-            };
+      </div>
+    </div>
+  </main>
 
-            const config = {
-                data: mockData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false, // 允許根據容器高度變形，實現更好的 RWD
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                font: {
-                                    family: "'Noto Sans TC', sans-serif",
-                                    size: 14
-                                },
-                                usePointStyle: true,
-                                padding: 20
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleFont: { family: "'Noto Sans TC', sans-serif", size: 14 },
-                            bodyFont: { family: "'Noto Sans TC', sans-serif", size: 13 },
-                            padding: 12,
-                            cornerRadius: 8,
-                            displayColors: true
-                        }
-                    },
-                    scales: {
-                        x: {
-                            grid: {
-                                display: false, // 隱藏 X 軸網格線使畫面更乾淨
-                            },
-                            ticks: {
-                                font: { family: "'Noto Sans TC', sans-serif" }
-                            }
-                        },
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            title: {
-                                display: true,
-                                text: '用戶數 (千人)',
-                                font: { family: "'Noto Sans TC', sans-serif" }
-                            },
-                            grid: {
-                                color: '#f1f5f9', // 淺色網格線
-                            }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: {
-                                display: true,
-                                text: '營收 (萬元)',
-                                font: { family: "'Noto Sans TC', sans-serif" }
-                            },
-                            grid: {
-                                drawOnChartArea: false, // 避免右側 Y 軸網格線覆蓋左側
-                            }
-                        }
-                    }
-                }
-            };
+  <footer class="text-center text-xs text-slate-500 mt-4">
+    點擊翻頁邊界或使用頂部按鈕切換
+  </footer>
 
-            // 實例化圖表
-            new Chart(ctx, config);
-        });
-    </script>
+  <!-- 初始化腳本 -->
+  <script>
+    let flipBook;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // 1. 初始化 3D 翻書
+      const bookElem = document.getElementById('flipBook');
+      flipBook = new St.PageFlip(bookElem, {
+        width: 420,
+        height: 560,
+        size: 'stretch',
+        minWidth: 315,
+        maxWidth: 500,
+        minHeight: 420,
+        maxHeight: 700,
+        maxShadowOpacity: 0.5,
+        showCover: true,
+        mobileScrollSupport: false
+      });
+
+      flipBook.loadFromHTML(document.querySelectorAll('.page'));
+
+      // 監聽翻頁更新計數器
+      flipBook.on('flip', (e) => {
+        document.getElementById('pageCounter').innerText = `${e.data + 1} / ${flipBook.getPageCount()}`;
+      });
+
+      document.getElementById('prevBtn').onclick = () => flipBook.flipPrev();
+      document.getElementById('nextBtn').onclick = () => flipBook.flipNext();
+
+      // 2. 初始化圖表
+      const ctx = document.getElementById('pageChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+          datasets: [{
+            label: '資料庫傳輸量 (MB)',
+            data: [65, 59, 80, 81, 56, 95],
+            backgroundColor: 'rgba(79, 70, 229, 0.7)',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    });
+  </script>
 </body>
 </html>

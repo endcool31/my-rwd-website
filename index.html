@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>現代化資訊儀表板</title>
+    
+    <!-- 引入 Google Fonts (Noto Sans TC 提供優秀的繁體中文顯示效果) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- 引入 Tailwind CSS (用於響應式設計與樣式) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 引入 FontAwesome (用於圖示) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 引入 Chart.js (用於數據圖表) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 平滑滾動與基礎設定 */
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            background-color: #f8fafc;
+            color: #334155;
+        }
+        /* 隱藏捲軸但保留滾動功能 (美化) */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="font-sans antialiased flex flex-col min-h-screen">
+
+    <!-- 導覽列 -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-chart-pie text-brand-600 text-2xl"></i>
+                    <span class="font-bold text-xl text-slate-800 tracking-wider">資訊儀表板</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#news" class="text-slate-600 hover:text-brand-600 transition-colors font-medium">最新消息</a>
+                    <a href="#charts" class="text-slate-600 hover:text-brand-600 transition-colors font-medium">數據分析</a>
+                </div>
+                <!-- 手機版選單按鈕 (裝飾用) -->
+                <div class="md:hidden flex items-center">
+                    <button class="text-slate-600 hover:text-brand-600 focus:outline-none">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 頁面主要內容區 -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-12">
+
+        <!-- 區塊 1：最新消息 -->
+        <section id="news" class="scroll-mt-24">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-regular fa-newspaper text-brand-500"></i> 最新消息
+                </h2>
+                <a href="#" class="text-sm text-brand-600 hover:text-brand-800 font-medium transition-colors">查看全部 &rarr;</a>
+            </div>
+            
+            <!-- 新聞卡片網格 (RWD: 手機1欄, 平板2欄, 電腦3欄) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- 新聞卡片 1 -->
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-100 overflow-hidden group cursor-pointer hover:-translate-y-1">
+                    <div class="h-2 bg-brand-500"></div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-blue-100 text-brand-600 text-xs font-bold px-2.5 py-0.5 rounded">系統公告</span>
+                            <span class="text-xs text-slate-400"><i class="fa-regular fa-clock"></i> 2026-09-21</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-800 mb-2 group-hover:text-brand-600 transition-colors">系統年度安全升級與維護通知</h3>
+                        <p class="text-slate-600 text-sm line-clamp-3 leading-relaxed">
+                            為提升系統安全性與效能，我們將於本週末進行系統升級。期間可能會有短暫的服務中斷，造成不便敬請見諒。升級後將帶來更流暢的操作體驗。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 新聞卡片 2 -->
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-100 overflow-hidden group cursor-pointer hover:-translate-y-1">
+                    <div class="h-2 bg-emerald-500"></div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-emerald-100 text-emerald-600 text-xs font-bold px-2.5 py-0.5 rounded">新功能</span>
+                            <span class="text-xs text-slate-400"><i class="fa-regular fa-clock"></i> 2026-09-18</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-800 mb-2 group-hover:text-emerald-600 transition-colors">全新自訂報表模組正式上線</h3>
+                        <p class="text-slate-600 text-sm line-clamp-3 leading-relaxed">
+                            備受期待的自訂報表模組現已推出！使用者現在可以根據自身需求，自由拖曳欄位並匯出專屬的資料報表，大幅提升工作效率與靈活性。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 新聞卡片 3 -->
+                <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-slate-100 overflow-hidden group cursor-pointer hover:-translate-y-1">
+                    <div class="h-2 bg-amber-500"></div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="bg-amber-100 text-amber-600 text-xs font-bold px-2.5 py-0.5 rounded">活動快訊</span>
+                            <span class="text-xs text-slate-400"><i class="fa-regular fa-clock"></i> 2026-09-15</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-800 mb-2 group-hover:text-amber-600 transition-colors">第三季線上使用者交流大會</h3>
+                        <p class="text-slate-600 text-sm line-clamp-3 leading-relaxed">
+                            誠摯邀請您參加我們的線上使用者交流大會，我們將分享下一季的產品路線圖，並傾聽您的寶貴建議。參加者還有機會獲得專屬紀念品！
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 區塊 2：數據圖表 (準備連接 MySQL) -->
+        <section id="charts" class="scroll-mt-24 pb-8">
+            <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2 mb-6">
+                <i class="fa-solid fa-chart-line text-brand-500"></i> 營運數據總覽
+            </h2>
+            
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
+                
+                <!-- 未來可連接 MySQL 提示區塊 -->
+                <div class="bg-brand-50 border border-brand-100 rounded-lg p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div class="bg-brand-100 text-brand-600 p-3 rounded-full flex-shrink-0">
+                        <i class="fa-solid fa-database text-lg"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-brand-900 font-bold text-md">開發中提示：未來可連接 MySQL 資料庫</h4>
+                        <p class="text-brand-700 text-sm mt-1">
+                            當前顯示的圖表為<strong>模擬測試數據 (Mock Data)</strong>。在未來的開發階段中，這裡可以整合後端 API (如 Node.js, PHP 或 Python)，直接連接並讀取 <code>MySQL</code> / <code>MariaDB</code> 資料庫，實現動態即時的圖表更新。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 圖表控制項 (模擬) -->
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-slate-700">每月活躍用戶與營收趨勢</h3>
+                    <select class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-brand-500 focus:border-brand-500 block p-2 outline-none">
+                        <option>2026 年度</option>
+                        <option>2025 年度</option>
+                    </select>
+                </div>
+
+                <!-- Chart.js 畫布容器 (設定相對高度以利 RWD) -->
+                <div class="relative w-full h-[60vh] min-h-[300px]">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 頁尾 -->
+    <footer class="bg-white border-t border-slate-200 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-slate-500 text-sm">
+                &copy; 2026 資訊儀表板系統. 僅供展示與版型參考。
+            </p>
+            <div class="flex gap-4 text-slate-400">
+                <a href="#" class="hover:text-brand-600 transition-colors"><i class="fa-brands fa-github text-xl"></i></a>
+                <a href="#" class="hover:text-brand-600 transition-colors"><i class="fa-solid fa-envelope text-xl"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Chart.js 初始化腳本 -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            
+            // 定義漸層背景 (適用於線條圖下方)
+            let gradientBlue = ctx.createLinearGradient(0, 0, 0, 400);
+            gradientBlue.addColorStop(0, 'rgba(59, 130, 246, 0.5)'); // Tailwind brand-500
+            gradientBlue.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+            let gradientEmerald = ctx.createLinearGradient(0, 0, 0, 400);
+            gradientEmerald.addColorStop(0, 'rgba(16, 185, 129, 0.5)');
+            gradientEmerald.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+            // 模擬資料 (未來可替換為 fetch API 從 MySQL 抓取的資料)
+            const mockData = {
+                labels: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月'],
+                datasets: [
+                    {
+                        label: '活躍用戶數 (千人)',
+                        data: [12, 19, 15, 22, 28, 25, 30, 34, 38],
+                        type: 'line',
+                        borderColor: '#3b82f6', // brand-500
+                        backgroundColor: gradientBlue,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#3b82f6',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        fill: true,
+                        tension: 0.4, // 曲線平滑度
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: '營業收入 (萬元)',
+                        data: [60, 85, 75, 110, 135, 120, 150, 165, 190],
+                        type: 'bar',
+                        backgroundColor: '#10b981', // emerald-500
+                        borderRadius: 6,          // 圓角柱狀圖
+                        barPercentage: 0.5,
+                        yAxisID: 'y1'
+                    }
+                ]
+            };
+
+            const config = {
+                data: mockData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // 允許根據容器高度變形，實現更好的 RWD
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    family: "'Noto Sans TC', sans-serif",
+                                    size: 14
+                                },
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { family: "'Noto Sans TC', sans-serif", size: 14 },
+                            bodyFont: { family: "'Noto Sans TC', sans-serif", size: 13 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: true
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false, // 隱藏 X 軸網格線使畫面更乾淨
+                            },
+                            ticks: {
+                                font: { family: "'Noto Sans TC', sans-serif" }
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: '用戶數 (千人)',
+                                font: { family: "'Noto Sans TC', sans-serif" }
+                            },
+                            grid: {
+                                color: '#f1f5f9', // 淺色網格線
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: '營收 (萬元)',
+                                font: { family: "'Noto Sans TC', sans-serif" }
+                            },
+                            grid: {
+                                drawOnChartArea: false, // 避免右側 Y 軸網格線覆蓋左側
+                            }
+                        }
+                    }
+                }
+            };
+
+            // 實例化圖表
+            new Chart(ctx, config);
+        });
+    </script>
+</body>
+</html>
